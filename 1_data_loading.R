@@ -133,23 +133,23 @@ ctd_df2$Depth <- ctd_df2$pressure
 
 # code snipped to find closest ctd-trawl combination
 zone <- floor((mean(subset(station_df, missionnumber == 3)$longitudestart, na.rm = T) + 180) / 6) + 1
-utmCRS <- CRS(paste0("+proj=utm +zone=", zone, " +datum=WGS84 +units=km +no_defs"))
+utmCRS <- paste0("+proj=utm +zone=", zone, " +datum=WGS84 +units=km +no_defs")
 
-stationSP <- SpatialPoints(
-  subset(station_df, missionnumber == 3) %>% select(longitudestart, latitudestart),
-  CRS("+proj=longlat +datum=WGS84")
-)
-stationSP <- spTransform(stationSP, utmCRS)
+stationSP <- st_as_sf(
+  subset(station_df, missionnumber == 3), coords=c("longitudestart", "latitudestart"),
+  crs="+proj=longlat +datum=WGS84",remove=FALSE) %>% 
+  st_transform(utmCRS)
 
-ctdSP <- SpatialPoints(
-  ctd_df2 %>% distinct(lon, lat),
-  CRS("+proj=longlat +datum=WGS84")
-)
-ctdSP <- spTransform(ctdSP, utmCRS)
+ctdSP <- st_as_sf(
+  ctd_df2,
+  coords=c("lon","lat"),crs="+proj=longlat +datum=WGS84",remove=FALSE) %>% 
+  st_transform(utmCRS)
 
+ctd_df2 <- st_join(ctdSP,stationSP %>% select(serialnumber),
+                   join=st_nearest_feature)
 
-dist <- gDistance(ctdSP, stationSP, byid = T) # distances between stations
-minDist <- apply(dist, 1, function(x) order(x, decreasing = F)[1]) # find closest
+ctd_df2$distance = min(st_distance(ctdSP,stationSP))
+
 ctd_match <- data.frame(
   serialnumber = unique(subset(station_df, missionnumber == 3)$serialnumber),
   ctdstation = unique(ctd_df2$ctdstation)[minDist],

@@ -1,7 +1,7 @@
 
 
 #Load required packages
-packages <- c("tidyverse","rgeos","rgdal","reshape2","readODS","sp","lubridate",
+packages <- c("tidyverse","sf","reshape2","readODS","lubridate",
               "mapdata","marmap","mapplots","gridExtra","ggforce","stringr",
               "bookdown","oce",
               "readxl","lme4","devtools","mgcv","glmmTMB","jtools","data.table","sjstats",

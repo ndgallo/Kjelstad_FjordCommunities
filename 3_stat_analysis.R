@@ -18,7 +18,9 @@
 
 ## Load relevant packages and data ####
 source("0_setup.R")
-source("1_data_loading.R")
+#source("1_data_loading.R")
+load("_data/Statistical_analysis.rda")
+
 
 ## for regression model, use df env_mod:
 ## variables: bottomdepth, sill_category, Temperature, Salinity, Oxygen,
@@ -32,6 +34,9 @@ source("1_data_loading.R")
 env_mod$sill_category <- as.factor(env_mod$sill_category) # categorical variable - factor
 env_mod$Trawl <- as.factor(env_mod$Trawl) # categorical variable - factor
 
+# remove salinity outliers?
+#env_mod <- filter(env_mod,Salinity>34.2)
+
 ### 1.1 Fish and Crustacean CPUE GLM - Figure 6 ####
 
 mod_catch_glm_log <- glm(
@@ -41,7 +46,7 @@ mod_catch_glm_log <- glm(
     + Salinity
     + dist_coast_km
     + bottomdepth
-    + aquaculture_impact
+    + (aquaculture_impact)
     + sill_category
     + Trawl,
   data = env_mod
@@ -52,47 +57,50 @@ plot(mod_catch_glm_log)
 appraise(mod_catch_glm_log)
 summary(mod_catch_glm_log)
 
+tiff(filename="_figures/Fig6_altC.tiff",width=4000,height=4000,
+     units="px",bg="white",compression="lzw",pointsize=80)
 par(mfrow = c(3, 3))
 visreg(mod_catch_glm_log, "Oxygen",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Oxygen (ml/L)", ylab = "log1p(CPUE, kg/min)",
+  points = list(cex = .7, pch = 16), xlab = "Oxygen (ml/L)", ylab = "log1p(CPUE, kg/min)",
   main = "A) Fish and crustacean"
 )
 
 visreg(mod_catch_glm_log, "Temperature",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Temperature (ºC)", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Temperature (ºC)", ylab = ""
 )
 
 visreg(mod_catch_glm_log, "Salinity",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Salinity (PSU)", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Salinity (PSU)", ylab = ""
 )
 
 visreg(mod_catch_glm_log, "bottomdepth",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Bottom depth (m)", ylab = "log1p(CPUE, kg/min)"
+  points = list(cex = .7, pch = 16), xlab = "Bottom depth (m)", ylab = "log1p(CPUE, kg/min)"
 )
 
 visreg(mod_catch_glm_log, "dist_coast_km",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Distance to coastline (km) **", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Distance to coastline (km) **", ylab = ""
 )
 
 visreg(mod_catch_glm_log, "aquaculture_impact",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Aquaculture impact score", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Aquaculture impact score", ylab = ""
 )
 
 visreg(mod_catch_glm_log, "Trawl",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Trawl", ylab = "log1p(CPUE, kg/min)"
+  points = list(cex = .7, pch = 16), xlab = "Trawl", ylab = "log1p(CPUE, kg/min)"
 )
 
 visreg(mod_catch_glm_log, "sill_category",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Sill category", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Sill category", ylab = ""
 )
+dev.off()
 
 ### 1.2 Periphylla CPUE GLM - Figure 7 ####
 # use env_mod
@@ -104,7 +112,7 @@ mod_peri_glm_log <- glm(
     + Salinity
     + dist_coast_km
     + bottomdepth
-    + aquaculture_impact
+    + (aquaculture_impact)
     + sill_category
     + Trawl,
   data = env_mod
@@ -114,50 +122,51 @@ plot(mod_peri_glm_log)
 
 summary(mod_peri_glm_log)
 appraise(mod_peri_glm_log)
-autoplot(mod_peri_glm_log)
 
+tiff(filename="_figures/Fig7_altC.tiff",width=4000,height=4000,
+     units="px",bg="white",compression="lzw",pointsize=80)
 par(mfrow = c(3, 3))
 visreg(mod_peri_glm_log, "Oxygen",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Oxygen (ml/L)", ylab = "log1p(CPUE, kg/min)",
+  points = list(cex = .7, pch = 16), xlab = "Oxygen (ml/L)", ylab = "log1p(CPUE, kg/min)",
   main = "B) Periphylla"
 )
 
 visreg(mod_peri_glm_log, "Temperature",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Temperature (ºC) ***", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Temperature (ºC) ***", ylab = ""
 )
 
 visreg(mod_peri_glm_log, "Salinity",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Salinity (PSU) *", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Salinity (PSU) *", ylab = ""
 )
 
 visreg(mod_peri_glm_log, "bottomdepth",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Bottom depth (m)", ylab = "log1p(CPUE, kg/min)"
+  points = list(cex = .7, pch = 16), xlab = "Bottom depth (m)", ylab = "log1p(CPUE, kg/min)"
 )
 
 visreg(mod_peri_glm_log, "dist_coast_km",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Distance to coastline (km)", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Distance to coastline (km)", ylab = ""
 )
 
 visreg(mod_peri_glm_log, "aquaculture_impact",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Aquaculture impact score", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Aquaculture impact score", ylab = ""
 )
 
 visreg(mod_peri_glm_log, "Trawl",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Trawl (F)", ylab = "log1p(CPUE, kg/min)"
+  points = list(cex = .7, pch = 16), xlab = "Trawl (F)", ylab = "log1p(CPUE, kg/min)"
 )
 
 visreg(mod_peri_glm_log, "sill_category",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1, pch = 1), xlab = "Sill category *(3)", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Sill category *(3)", ylab = ""
 )
-
+dev.off()
 
 ### 1.3 Diversity GLM - Figure 8 ####
 # uses env_mod
@@ -170,7 +179,7 @@ mod_diversity_glm <- glm(
     + Salinity
     + dist_coast_km
     + bottomdepth
-    + aquaculture_impact
+    + (aquaculture_impact)
     + sill_category
     + Trawl,
   data = env_mod
@@ -182,46 +191,49 @@ anova(mod_diversity_glm)
 par(mfrow = c(2, 2))
 plot(mod_diversity_glm)
 
+tiff(filename="_figures/Fig8_altC.tiff",width=4000,height=4000,
+     units="px",bg="white",compression="lzw",pointsize=80)
 par(mfrow = c(3, 3))
 visreg(mod_diversity_glm, "Oxygen",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1.5, pch = 1), xlab = "Oxygen (ml/L)", ylab = "H' diversity"
+  points = list(cex = .7, pch = 16), xlab = "Oxygen (ml/L)", ylab = "H' diversity"
 )
 
 visreg(mod_diversity_glm, "Temperature",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1.5, pch = 1), xlab = "Temperature (ºC)", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Temperature (ºC)", ylab = ""
 )
 
 visreg(mod_diversity_glm, "Salinity",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1.5, pch = 1), xlab = "Salinity (PSU)", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Salinity (PSU)", ylab = ""
 )
 
 visreg(mod_diversity_glm, "bottomdepth",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1.5, pch = 1), xlab = "Bottom depth (m)  ***", ylab = "H' diversity"
+  points = list(cex = .7, pch = 16), xlab = "Bottom depth (m)  ***", ylab = "H' diversity"
 )
 
 visreg(mod_diversity_glm, "dist_coast_km",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1.5, pch = 1), xlab = "Distance to coastline (km)", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Distance to coastline (km)", ylab = ""
 )
 
 visreg(mod_diversity_glm, "aquaculture_impact",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1.5, pch = 1), xlab = "Aquaculture impact score", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Aquaculture impact score", ylab = ""
 )
 
 visreg(mod_diversity_glm, "Trawl",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1.5, pch = 1), xlab = "Trawl (F)", ylab = "H' diversity"
+  points = list(cex = .7, pch = 16), xlab = "Trawl (F)", ylab = "H' diversity"
 )
 
 visreg(mod_diversity_glm, "sill_category",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
-  points = list(cex = 1.5, pch = 1), xlab = "Sill category **(3)", ylab = ""
+  points = list(cex = .7, pch = 16), xlab = "Sill category **(3)", ylab = ""
 )
+dev.off()
 
 ### 2. Cluster analysis and IndVal - Figure 9 ####
 
