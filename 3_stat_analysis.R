@@ -35,7 +35,9 @@ env_mod$sill_category <- as.factor(env_mod$sill_category) # categorical variable
 env_mod$Trawl <- as.factor(env_mod$Trawl) # categorical variable - factor
 
 # remove salinity outliers?
-#env_mod <- filter(env_mod,Salinity>34.2)
+#env_mod <- filter(env_mod,Salinity>34)
+#env_mod <- mutate(env_mod,Salinity=ifelse(Salinity>34.2,Salinity,NA))
+
 
 ### 1.1 Fish and Crustacean CPUE GLM - Figure 6 ####
 
@@ -46,7 +48,7 @@ mod_catch_glm_log <- glm(
     + Salinity
     + dist_coast_km
     + bottomdepth
-    + (aquaculture_impact)
+    + log10(aquaculture_impact)
     + sill_category
     + Trawl,
   data = env_mod
@@ -57,7 +59,7 @@ plot(mod_catch_glm_log)
 appraise(mod_catch_glm_log)
 summary(mod_catch_glm_log)
 
-tiff(filename="_figures/Fig6_altC.tiff",width=4000,height=4000,
+tiff(filename="_figures/Fig6.tiff",width=4000,height=4000,
      units="px",bg="white",compression="lzw",pointsize=80)
 par(mfrow = c(3, 3))
 visreg(mod_catch_glm_log, "Oxygen",
@@ -112,7 +114,7 @@ mod_peri_glm_log <- glm(
     + Salinity
     + dist_coast_km
     + bottomdepth
-    + (aquaculture_impact)
+    + log(aquaculture_impact)
     + sill_category
     + Trawl,
   data = env_mod
@@ -123,7 +125,7 @@ plot(mod_peri_glm_log)
 summary(mod_peri_glm_log)
 appraise(mod_peri_glm_log)
 
-tiff(filename="_figures/Fig7_altC.tiff",width=4000,height=4000,
+tiff(filename="_figures/Fig7.tiff",width=4000,height=4000,
      units="px",bg="white",compression="lzw",pointsize=80)
 par(mfrow = c(3, 3))
 visreg(mod_peri_glm_log, "Oxygen",
@@ -179,7 +181,7 @@ mod_diversity_glm <- glm(
     + Salinity
     + dist_coast_km
     + bottomdepth
-    + (aquaculture_impact)
+    + log10(aquaculture_impact)
     + sill_category
     + Trawl,
   data = env_mod
@@ -191,7 +193,7 @@ anova(mod_diversity_glm)
 par(mfrow = c(2, 2))
 plot(mod_diversity_glm)
 
-tiff(filename="_figures/Fig8_altC.tiff",width=4000,height=4000,
+tiff(filename="_figures/Fig8.tiff",width=4000,height=4000,
      units="px",bg="white",compression="lzw",pointsize=80)
 par(mfrow = c(3, 3))
 visreg(mod_diversity_glm, "Oxygen",
