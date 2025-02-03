@@ -48,7 +48,7 @@ mod_catch_glm_log <- glm(
     + Salinity
     + dist_coast_km
     + bottomdepth
-    + log10(aquaculture_impact)
+    + (aquaculture_impact)
     + sill_category
     + Trawl,
   data = env_mod
@@ -108,13 +108,13 @@ dev.off()
 # use env_mod
 
 mod_peri_glm_log <- glm(
-  log1p(Periphylla_kg) ~
+  (Periphylla_kg) ~
     Oxygen
     + Temperature
     + Salinity
     + dist_coast_km
     + bottomdepth
-    + log(aquaculture_impact)
+    + (aquaculture_impact)
     + sill_category
     + Trawl,
   data = env_mod
@@ -181,7 +181,7 @@ mod_diversity_glm <- glm(
     + Salinity
     + dist_coast_km
     + bottomdepth
-    + log10(aquaculture_impact)
+    + (aquaculture_impact)
     + sill_category
     + Trawl,
   data = env_mod
