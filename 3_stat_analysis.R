@@ -108,7 +108,7 @@ dev.off()
 # use env_mod
 
 mod_peri_glm_log <- glm(
-  (Periphylla_kg) ~
+  log1p(Periphylla_kg) ~
     Oxygen
     + Temperature
     + Salinity
@@ -133,7 +133,6 @@ visreg(mod_peri_glm_log, "Oxygen",
   points = list(cex = .7, pch = 16), xlab = "Oxygen (ml/L)", ylab = "log1p(CPUE, kg/min)",
   main = "B) Periphylla"
 )
-
 visreg(mod_peri_glm_log, "Temperature",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
   points = list(cex = .7, pch = 16), xlab = "Temperature (ºC) ***", ylab = ""
