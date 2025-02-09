@@ -3,7 +3,7 @@
 #Load required packages
 packages <- c("tidyverse","sf","reshape2","readODS","lubridate",
               "mapdata","marmap","mapplots","gridExtra","ggforce","stringr",
-              "bookdown","oce",
+              "bookdown","oce","visreg",
               "readxl","lme4","devtools","mgcv","glmmTMB","jtools","data.table","sjstats",
               "RstoxBase","RstoxData","readxl","ggOceanMaps","ggpubr",
               "knitr", "kableExtra","splines")

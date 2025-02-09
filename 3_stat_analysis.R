@@ -36,11 +36,10 @@ env_mod$Trawl <- as.factor(env_mod$Trawl) # categorical variable - factor
 
 # remove salinity outliers?
 #env_mod <- filter(env_mod,Salinity>34)
-#env_mod <- mutate(env_mod,Salinity=ifelse(Salinity>34.2,Salinity,NA))
+#env_mod <- mutate(env_mod,aquaculture_impact=log10(aquaculture_impact))
 
 
 ### 1.1 Fish and Crustacean CPUE GLM - Figure 6 ####
-
 mod_catch_glm_log <- glm(
   log1p(catchweight_minus_Periphylla) ~
     Oxygen
@@ -56,11 +55,10 @@ mod_catch_glm_log <- glm(
 par(mfrow = c(2, 2))
 plot(mod_catch_glm_log)
 
-appraise(mod_catch_glm_log)
 summary(mod_catch_glm_log)
 
 tiff(filename="_figures/Fig6.tiff",width=4000,height=4000,
-     units="px",bg="white",compression="lzw",pointsize=80)
+     units="px",bg="white",compression="lzw",pointsize=70)
 par(mfrow = c(3, 3))
 visreg(mod_catch_glm_log, "Oxygen",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
@@ -123,10 +121,9 @@ par(mfrow = c(2, 2))
 plot(mod_peri_glm_log)
 
 summary(mod_peri_glm_log)
-appraise(mod_peri_glm_log)
 
 tiff(filename="_figures/Fig7.tiff",width=4000,height=4000,
-     units="px",bg="white",compression="lzw",pointsize=80)
+     units="px",bg="white",compression="lzw",pointsize=70)
 par(mfrow = c(3, 3))
 visreg(mod_peri_glm_log, "Oxygen",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
@@ -193,7 +190,7 @@ par(mfrow = c(2, 2))
 plot(mod_diversity_glm)
 
 tiff(filename="_figures/Fig8.tiff",width=4000,height=4000,
-     units="px",bg="white",compression="lzw",pointsize=80)
+     units="px",bg="white",compression="lzw",pointsize=70)
 par(mfrow = c(3, 3))
 visreg(mod_diversity_glm, "Oxygen",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
