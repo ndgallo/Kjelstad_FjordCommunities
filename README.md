@@ -9,5 +9,3 @@ Briefly, the Github contains the following:
 3_stat_analysis.R: this script contains code used in data analysis, model fitting, and multivariate analysis for the manuscript
 
 Key dataframes produced and used are: CPUE_catchweight, species_matrix_sqrt, catch_nMDS, env_fit, env_df, env_mod
-
-The .xlsx file also FjordCommunities_variables_static.xlsx also contains important station and sample metadata. 
