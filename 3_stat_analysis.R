@@ -1,6 +1,6 @@
 ## FjordCommunities
 ##
-## Data analysis (updated 5 September 2024)
+## Data analysis (updated 9 February 2025)
 ##
 #### Code sections overview ####
 ##  1: GLM Regression
@@ -18,9 +18,18 @@
 
 ## Load relevant packages and data ####
 source("0_setup.R")
-#source("1_data_loading.R")
 load("_data/Statistical_analysis.rda")
 
+## Check correlation in environmental variables
+corr_check <- read_excel("_data/FjordCommunities_env_df.xlsx", sheet = "Environmental data")
+
+corr_check$sill_category <- as.factor(corr_check$sill_category) # categorical variable - factor
+corr_check$Trawl <- as.factor(corr_check$Trawl) # categorical variable - factor
+corr_check$dist_shallowest_sill <- as.numeric(corr_check$dist_shallowest_sill) # numeric variable
+corr_check$sill_depth_m <- as.numeric(corr_check$sill_depth_m) # numeric variable
+
+corr_check_sub <- corr_check |> select(dist_shallowest_sill, dist_coast_km, Trawl, sill_category, dist_aquaculture, aquaculture_impact, bottomdepth, Oxygen, Temperature, Salinity)
+ggpairs(corr_check_sub)
 
 ## for regression model, use df env_mod:
 ## variables: bottomdepth, sill_category, Temperature, Salinity, Oxygen,
@@ -36,8 +45,7 @@ env_mod$Trawl <- as.factor(env_mod$Trawl) # categorical variable - factor
 
 # remove salinity outliers?
 #env_mod <- filter(env_mod,Salinity>34)
-#env_mod <- mutate(env_mod,aquaculture_impact=log10(aquaculture_impact))
-
+#env_mod <- mutate(env_mod,Salinity=ifelse(Salinity>34.2,Salinity,NA))
 
 ### 1.1 Fish and Crustacean CPUE GLM - Figure 6 ####
 mod_catch_glm_log <- glm(
@@ -55,10 +63,12 @@ mod_catch_glm_log <- glm(
 par(mfrow = c(2, 2))
 plot(mod_catch_glm_log)
 
+appraise(mod_catch_glm_log)
 summary(mod_catch_glm_log)
+vif(mod_catch_glm_log)
 
-tiff(filename="_figures/Fig6.tiff",width=4000,height=4000,
-     units="px",bg="white",compression="lzw",pointsize=70)
+tiff(filename="_figures/Fig6_new_SOR.tiff",width=4000,height=4000,
+     units="px",bg="white",compression="lzw",pointsize=80)
 par(mfrow = c(3, 3))
 visreg(mod_catch_glm_log, "Oxygen",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
@@ -121,9 +131,11 @@ par(mfrow = c(2, 2))
 plot(mod_peri_glm_log)
 
 summary(mod_peri_glm_log)
+appraise(mod_peri_glm_log)
+vif(mod_peri_glm_log)
 
-tiff(filename="_figures/Fig7.tiff",width=4000,height=4000,
-     units="px",bg="white",compression="lzw",pointsize=70)
+tiff(filename="_figures/Fig7_new.tiff",width=4000,height=4000,
+     units="px",bg="white",compression="lzw",pointsize=80)
 par(mfrow = c(3, 3))
 visreg(mod_peri_glm_log, "Oxygen",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
@@ -188,9 +200,10 @@ anova(mod_diversity_glm)
 
 par(mfrow = c(2, 2))
 plot(mod_diversity_glm)
+vif(mod_diversity_glm)
 
-tiff(filename="_figures/Fig8.tiff",width=4000,height=4000,
-     units="px",bg="white",compression="lzw",pointsize=70)
+tiff(filename="_figures/Fig8_new.tiff",width=4000,height=4000,
+     units="px",bg="white",compression="lzw",pointsize=80)
 par(mfrow = c(3, 3))
 visreg(mod_diversity_glm, "Oxygen",
   line = list(col = "grey20"), fill = list(col = "lightblue"),
@@ -237,6 +250,40 @@ dev.off()
 
 ### 2.1 Cluster analysis ####
 ### Cluster -  Finding groups of similar observations
+## Need to standardize the catch first
+species_catchweight <- catch_df %>%
+  select(
+    ID, fishingtime_min, longitudestart, latitudestart, startyear, Trawl,
+    starts_with("catchweight")
+  )
+
+## standardize by fishingtime
+catchweight <- startsWith(names(species_catchweight), "catchweight")
+CPUE_catchweight <- replace(species_catchweight, catchweight, species_catchweight[catchweight] / species_catchweight$fishingtime_min)
+
+rownames(CPUE_catchweight) <- CPUE_catchweight$ID
+
+summary(CPUE_catchweight_clean)
+# remove columns from df to make clean df
+CPUE_catchweight_clean <- CPUE_catchweight %>%
+  subset(select = -c(
+    ID, fishingtime_min, latitudestart, longitudestart,
+    startyear, Trawl, catchweight_total, 
+    catchweight_tot_minusperiphylla_kg,catchweight_kg_periphylla,catchweight_total_g
+  ))
+
+#drop columns for two species that do not appear in the dataset (columns 63 and 64)
+#Limanda limanda (catchweight_g_Limanda limanda)
+#Microstomus kitt (catchweight_g_Microstomus kitt) 
+
+CPUE_catchweight_clean <- CPUE_catchweight_clean[, -c(63, 64)]
+
+# make relative df
+catchweight_relative <- (CPUE_catchweight_clean / rowSums(CPUE_catchweight_clean) * 100)
+
+### data preparation for analysis
+species_matrix <- as.matrix(catchweight_relative) # matrix of spp. relative abundance
+species_matrix_sqrt <- sqrt(species_matrix) # square-root transformed relative abundance
 
 ## hierarchical clustering
 # calculate distance matrix
@@ -252,7 +299,6 @@ fviz_nbclust(species_matrix_sqrt, kmeans, method = "wss") +
   labs(subtitle = "Elbow method")
 # --> 4 clusters
 
-library(dendextend)
 dend_obj <- as.dendrogram(species_hclust_ward)
 plot(dend_obj)
 col_dend <- color_branches(dend_obj,
@@ -308,8 +354,6 @@ map_cluster
 # ggsave(map_cluster, filename="map_cluster.png", width=5, height=8)
 
 ### 2.2 IndVal analysis ####
-# install.packages("labdsv")
-library(labdsv)
 
 # uses CPUE_catchweight
 sp_iva <- CPUE_catchweight %>%
@@ -376,34 +420,17 @@ median(catch_df[catch_df$cluster == "3", "bottomdepth"])
 median(catch_df[catch_df$cluster == "4", "bottomdepth"])
 
 #### 3. Ordination ####
-
-# unimodal or linear distribution?
 # uses species_matrix_sqrt
-catch_DCA <- decorana(species_matrix_sqrt)
-catch_DCA
-# Axis lengths 3.2416 2.6714 2.3497 1.7177 -> Unimodal as axis lengths are > 3 (linear < 3)
+# Save species_matrix_sqrt file to test
 
-## Since it is unimodal -> Correspondence Analysis CA & DCA
-## --> if artifact (arch) in CA, use DCA. (if linear -> PCA)
-
-## Choice or no underlying response model
-##  -> Principal Co-ordinates Analysis PCoA
-##  -> Non-metric Multidimensional Scaling NMDS
-
-catch_CA <- cca(species_matrix_sqrt)
-par(mfrow = c(2, 2))
-plot(catch_CA)
-# -> there is an arch/diamond shape -> artifact in the CA plot -> do not use
-
-# DCA
-plot(catch_DCA)
+write.csv(species_matrix_sqrt, "species_matrix_sqrt.csv", row.names = FALSE)
 
 # NMDS
 set.seed(10)
 catch_NMDS <- metaMDS(species_matrix_sqrt, distance = "bray")
 catch_NMDS
 plot(catch_NMDS)
-# stress = 0.2028 2D
+# #2D stress = 0.2028
 stressplot(catch_NMDS)
 
 catch_NMDS$points
@@ -470,23 +497,26 @@ nmds_plot <- ggplot() +
   scale_fill_manual(values = c("deeppink1", "seagreen", "darkgoldenrod1", "royalblue3")) +
   ggrepel::geom_text_repel(
     data = selected_sp, aes(x = NMDS1, y = NMDS2, label = species),
-    alpha = 0.8, size = 3.5, force = 0.02
+    alpha = 0.9, size = 4.1, force = 2
   ) +
   theme_bw() +
   theme(panel.grid = element_blank())
 
 nmds_plot
 
-# ggsave(nmds_plot, filename="nmds_plot.png", width=6.5, height=6)
-
-## Direct gradient analysis (not used)
-# Detrended (CCA) = constrained DCA
-par(mfrow = c(1, 1))
-catch_RDA <- rda(species_matrix_sqrt ~ ., data = env_df)
-catch_RDA
-plot(catch_RDA)
+ggsave(nmds_plot, filename="nmds_plot.png", width=6.5, height=6)
 
 ### fit environmental variables to ordination
+# for environmental variables in ordination, use env_df
+
+env_df <- read_excel("_data/FjordCommunities_env_df.xlsx", sheet = "Environmental data") %>%
+  select(bottomdepth, Oxygen, Temperature, Salinity, aquaculture_impact,
+         Trawl, dist_coast_km, sill_depth_m)
+env_df$Trawl = as.factor(env_df$Trawl)
+env_df$sill_depth_m = as.numeric(env_df$sill_depth_m)
+env_df[is.na(env_df)] <- 0
+summary(env_df)
+
 # uses catch_NMDS and env_fit
 catch_envfit <- envfit(catch_NMDS, env_df,
   choices = 1:2,
@@ -496,7 +526,8 @@ catch_envfit
 
 plot(catch_NMDS)
 plot(catch_envfit, p.max = .05)
-# dist_coast *, bottom depth ***, oxygen **, temp ***, salinity ***
+# dist_coast *, bottom depth ***, oxygen **, temp ***, salinity ***,
+# sill_depth_m **, (Trawl and aquaculture impact no significant)
 
 # add env to NMDS ggplot
 env.scores <- as.data.frame(vegan::scores(catch_envfit, display = "vectors"))
@@ -530,43 +561,27 @@ nmds_plot_env <- ggplot() +
     aes(x = 0, xend = NMDS1, y = 0, yend = NMDS2),
     arrow = arrow(length = unit(0.25, "cm")), colour = "grey20"
   ) +
-  geom_text(
+  ggrepel::geom_text_repel(
     data = env.scores, aes(x = NMDS1, y = NMDS2, label = Vectors),
-    size = 3.5
-  ) +
+    alpha = 0.9, size = 4.1, force = 2
+  ) + 
   geom_point(
     data = env.scores.fac, aes(x = NMDS1, y = NMDS2),
     shape = "+", size = 6, alpha = 0.6, colour = "brown4"
   ) +
   ggrepel::geom_text_repel(
     data = env.scores.fac, aes(x = NMDS1, y = NMDS2 + 0.05),
-    label = env.scores.fac$factors.env, colour = "grey20", size = 3, force = 0.001
+    label = env.scores.fac$factors.env, colour = "grey20", size = 4, force = 0.001,
   ) +
   theme_bw() +
   theme(panel.grid = element_blank())
 nmds_plot_env
 
-nmds_plot_env_cont <- ggplot() +
-  geom_point(
-    data = nmds_tibble, aes(x = MDS1, y = MDS2, color = cluster),
-    size = 4, alpha = 0.5
-  ) +
-  coord_fixed() +
-  scale_color_manual(values = c("deeppink1", "seagreen", "darkgoldenrod1", "royalblue3")) +
-  geom_segment(
-    data = env.scores,
-    aes(x = 0, xend = NMDS1, y = 0, yend = NMDS2),
-    arrow = arrow(length = unit(0.25, "cm")), colour = "grey20"
-  ) +
-  geom_text(
-    data = env.scores, aes(x = NMDS1, y = NMDS2, label = Vectors),
-    size = 3.5
-  ) +
-  theme_bw() +
-  theme(panel.grid = element_blank())
-nmds_plot_env_cont
-
 # ggsave(nmds_plot_env, filename="nmds_plot_env.png", width=6.5, height=6)
+
+
+
+
 
 ## ordisurf - non-linear relationships between community data and env var
 

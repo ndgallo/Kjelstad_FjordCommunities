@@ -1,12 +1,13 @@
 
 
 #Load required packages
-packages <- c("tidyverse","sf","reshape2","readODS","lubridate",
+packages <- c("tidyverse","sf","reshape2","readODS","lubridate", "GGally",
               "mapdata","marmap","mapplots","gridExtra","ggforce","stringr",
-              "bookdown","oce","visreg",
+              "bookdown","oce", "vegan", "factoextra", "dendextend", "labdsv",
               "readxl","lme4","devtools","mgcv","glmmTMB","jtools","data.table","sjstats",
               "RstoxBase","RstoxData","readxl","ggOceanMaps","ggpubr",
-              "knitr", "kableExtra","splines")
+              "knitr", "kableExtra","splines", "visreg", "gratia", "car",
+              "cowplot")
 
 # Install missing packages
 installed_packages <- packages %in% rownames(installed.packages())
