@@ -1,6 +1,6 @@
 ## FjordCommunities
 ##
-## Data exploration (updated 23 March 2024)
+## Data exploration (updated 23 March 2025)
 
 ## Code sections overview ####
 ##  Map of stations - Figure 1
