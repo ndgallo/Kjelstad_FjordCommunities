@@ -275,9 +275,7 @@ rownames(CPUE_catchweight) <- CPUE_catchweight$ID
 CPUE_catchweight_clean <- CPUE_catchweight %>%
   subset(select = -c(
     ID, fishingtime_min, latitudestart, longitudestart,
-    startyear, Trawl, catchweight_total, 
-    catchweight_tot_minusperiphylla_kg,catchweight_kg_periphylla,catchweight_total_g
-  ))
+    startyear, Trawl))
 
 #drop columns for two species that do not appear in the dataset (columns 63 and 64)
 #Limanda limanda (catchweight_g_Limanda limanda)
@@ -369,8 +367,7 @@ ggsave(map_cluster, filename="map_cluster.tiff", width=5, height=8, units = "in"
 
 # uses CPUE_catchweight
 sp_iva <- CPUE_catchweight %>%
-  select(starts_with("catchweight")) %>%
-  subset(select = -c(catchweight_total, catchweight_tot_minusperiphylla_kg, catchweight_kg_periphylla))
+  select(starts_with("catchweight"))
 sp_iva <- sp_iva[, (!apply(sp_iva == 0, 2, all))]
 
 iva <- indval(sp_iva, cluster_stations$cluster)
